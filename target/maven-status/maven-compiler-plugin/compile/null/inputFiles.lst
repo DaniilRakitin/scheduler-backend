@@ -1,0 +1,9 @@
+C:\Users\Admin\Desktop\timefold-quickstarts\java\employee-scheduling\src\main\java\org\acme\employeescheduling\domain\AvailabilityInterval.java
+C:\Users\Admin\Desktop\timefold-quickstarts\java\employee-scheduling\src\main\java\org\acme\employeescheduling\domain\Employee.java
+C:\Users\Admin\Desktop\timefold-quickstarts\java\employee-scheduling\src\main\java\org\acme\employeescheduling\domain\EmployeeSchedule.java
+C:\Users\Admin\Desktop\timefold-quickstarts\java\employee-scheduling\src\main\java\org\acme\employeescheduling\domain\Shift.java
+C:\Users\Admin\Desktop\timefold-quickstarts\java\employee-scheduling\src\main\java\org\acme\employeescheduling\rest\EmployeeScheduleResource.java
+C:\Users\Admin\Desktop\timefold-quickstarts\java\employee-scheduling\src\main\java\org\acme\employeescheduling\rest\exception\EmployeeScheduleSolverException.java
+C:\Users\Admin\Desktop\timefold-quickstarts\java\employee-scheduling\src\main\java\org\acme\employeescheduling\rest\exception\EmployeeScheduleSolverExceptionMapper.java
+C:\Users\Admin\Desktop\timefold-quickstarts\java\employee-scheduling\src\main\java\org\acme\employeescheduling\rest\exception\ErrorInfo.java
+C:\Users\Admin\Desktop\timefold-quickstarts\java\employee-scheduling\src\main\java\org\acme\employeescheduling\solver\EmployeeSchedulingConstraintProvider.java
