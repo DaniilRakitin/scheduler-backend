@@ -48,8 +48,6 @@ io.quarkus.vertx.utils:quarkus-vertx-utils::jar:3.13.2
 io.quarkus:quarkus-arc::jar:3.13.2
 io.quarkus:quarkus-bootstrap-runner::jar:3.13.2
 io.quarkus:quarkus-classloader-commons::jar:3.13.2
-io.quarkus:quarkus-container-image-jib::jar:3.13.2
-io.quarkus:quarkus-container-image::jar:3.13.2
 io.quarkus:quarkus-core::jar:3.13.2
 io.quarkus:quarkus-credentials::jar:3.13.2
 io.quarkus:quarkus-development-mode-spi::jar:3.13.2
