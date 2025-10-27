@@ -9,7 +9,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
@@ -45,24 +45,25 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
                 unavailableEmployee(constraintFactory),
                 employeeNotExceedMonthlyHours(constraintFactory),
                 fullDayShift24HourBreak(constraintFactory),
-                // Soft constraints
-                undesiredDayForEmployee(constraintFactory),
+                // Medium constrains
                 desiredDayForEmployee(constraintFactory),
-                balanceEmployeeShiftAssignments(constraintFactory)
+                balanceEmployeeShiftAssignments(constraintFactory),
+                // Soft constraints
+                undesiredDayForEmployee(constraintFactory)
         };
     }
 
     Constraint requiredSkill(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Shift.class)
                 .filter(shift -> !shift.getEmployee().getSkills().contains(shift.getRequiredSkill()))
-                .penalize(HardSoftBigDecimalScore.ONE_HARD)
+                .penalize(HardMediumSoftBigDecimalScore.ONE_HARD)
                 .asConstraint("Missing required skill");
     }
 
     Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
         return constraintFactory.forEachUniquePair(Shift.class, equal(Shift::getEmployee),
                 overlapping(Shift::getStart, Shift::getEnd))
-                .penalize(HardSoftBigDecimalScore.ONE_HARD,
+                .penalize(HardMediumSoftBigDecimalScore.ONE_HARD,
                         EmployeeSchedulingConstraintProvider::getMinuteOverlap)
                 .asConstraint("Overlapping shift");
     }
@@ -72,7 +73,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
                 .join(Shift.class, equal(Shift::getEmployee), lessThanOrEqual(Shift::getEnd, Shift::getStart))
                 .filter((firstShift,
                         secondShift) -> Duration.between(firstShift.getEnd(), secondShift.getStart()).toHours() < 11)
-                .penalize(HardSoftBigDecimalScore.ONE_HARD,
+                .penalize(HardMediumSoftBigDecimalScore.ONE_HARD,
                         (firstShift, secondShift) -> {
                             int breakLength = (int) Duration.between(firstShift.getEnd(), secondShift.getStart()).toMinutes();
                             return (11 * 60) - breakLength;
@@ -83,7 +84,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
     Constraint oneShiftPerDay(ConstraintFactory constraintFactory) {
         return constraintFactory.forEachUniquePair(Shift.class, equal(Shift::getEmployee),
                 equal(shift -> shift.getStart().toLocalDate()))
-                .penalize(HardSoftBigDecimalScore.ONE_HARD)
+                .penalize(HardMediumSoftBigDecimalScore.ONE_HARD)
                 .asConstraint("Max one shift per day");
     }
 
@@ -92,8 +93,8 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
             .join(Employee.class, equal(Shift::getEmployee, Function.identity()))
             .flattenLast(Employee::getUnavailableIntervals) // Flatten the collection of intervals
             .filter((shift, interval) -> shift.getStart().isBefore(interval.getEnd()) && shift.getEnd().isAfter(interval.getStart()))
-            .penalize(HardSoftBigDecimalScore.ONE_HARD, 
-                      (shift, interval) -> calculateOverlapMinutes(shift, interval))
+            .penalize(HardMediumSoftBigDecimalScore.ONE_HARD,
+                    this::calculateOverlapMinutes)
             .asConstraint("Employee unavailable during shift");
     }
 
@@ -102,8 +103,8 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
             .join(Employee.class, equal(Shift::getEmployee, Function.identity()))
             .flattenLast(Employee::getUndesiredIntervals) // Flatten the collection of intervals
             .filter((shift, interval) -> shift.getStart().isBefore(interval.getEnd()) && shift.getEnd().isAfter(interval.getStart()))
-            .penalize(HardSoftBigDecimalScore.ONE_SOFT, 
-                      (shift, interval) -> calculateOverlapMinutes(shift, interval))
+            .penalize(HardMediumSoftBigDecimalScore.ONE_SOFT,
+                    this::calculateOverlapMinutes)
             .asConstraint("Undesired time for employee");
     }
 
@@ -112,7 +113,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
             .join(Employee.class, equal(Shift::getEmployee, Function.identity()))
             .flattenLast(Employee::getDesiredIntervals) // Flatten the collection of intervals
             .filter((shift, interval) -> shift.getStart().isBefore(interval.getEnd()) && shift.getEnd().isAfter(interval.getStart()))
-            .reward(HardSoftBigDecimalScore.ONE_HARD, 
+            .reward(HardMediumSoftBigDecimalScore.ONE_MEDIUM,
                     (shift, interval) -> Math.max(0, calculateOverlapMinutes(shift, interval)))
             .asConstraint("Desired time for employee");
     }
@@ -123,7 +124,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
                 .complement(Employee.class, e -> 0) // Include all employees which are not assigned to any shift.c
                 .groupBy(ConstraintCollectors.loadBalance((employee, shiftCount) -> employee,
                         (employee, shiftCount) -> shiftCount))
-                .penalizeBigDecimal(HardSoftBigDecimalScore.ONE_SOFT, LoadBalance::unfairness)
+                .penalizeBigDecimal(HardMediumSoftBigDecimalScore.ONE_MEDIUM, LoadBalance::unfairness)
                 .asConstraint("Balance employee shift assignments");
     }
     
@@ -133,7 +134,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
             .groupBy(Shift::getEmployee, 
                      ConstraintCollectors.sumBigDecimal(this::calculateShiftHours))
             .filter((employee, totalHours) -> totalHours.compareTo(BigDecimal.valueOf(employee.getMonthlyHours())) > 0)
-            .penalizeBigDecimal(HardSoftBigDecimalScore.ONE_HARD, 
+            .penalizeBigDecimal(HardMediumSoftBigDecimalScore.ONE_HARD,
                 (employee, totalHours) -> totalHours.subtract(BigDecimal.valueOf(employee.getMonthlyHours())))
             .asConstraint("Employee over monthly hours");
     }/*
@@ -142,7 +143,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
                 .groupBy(Shift::getEmployee, 
                          ConstraintCollectors.sumBigDecimal(this::calculateShiftHours)) // Sum shift duration per employee
                 .filter((employee, totalMinutes) -> totalMinutes.compareTo(BigDecimal.valueOf(7200L)) < 0) // Filter employees working less than 120 hours
-                .penalizeBigDecimal(HardSoftBigDecimalScore.ofHard(BigDecimal.valueOf(1000)),
+                .penalizeBigDecimal(HardMediumSoftBigDecimalScore.ofHard(BigDecimal.valueOf(1000)),
                 		(employee, totalMinutes) -> BigDecimal.valueOf(7200L).subtract(totalMinutes)) // Penalize the deficit
                 .asConstraint("Employee must work at least 120 hours per month");
     }*/
@@ -153,7 +154,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
             .filter((firstShift, secondShift) -> 
                 firstShift.getEnd().isBefore(secondShift.getStart()) &&  // Ensure the second shift starts after the first
                 Duration.between(firstShift.getEnd(), secondShift.getStart()).toHours() < 24)  // Check for 24-hour gap
-            .penalize(HardSoftBigDecimalScore.ONE_HARD,
+            .penalize(HardMediumSoftBigDecimalScore.ONE_HARD,
                     (firstShift, secondShift) -> {
                         int breakLength = (int) Duration.between(firstShift.getEnd(), secondShift.getStart()).toMinutes();
                         return (24 * 60) - breakLength;  // Penalize based on the missing break time

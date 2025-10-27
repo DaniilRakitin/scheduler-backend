@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -19,7 +20,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
-import ai.timefold.solver.core.api.score.buildin.hardsoftbigdecimal.HardSoftBigDecimalScore;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -46,14 +46,14 @@ public class EmployeeScheduleResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmployeeScheduleResource.class);
 
     SolverManager<EmployeeSchedule, String> solverManager;
-    SolutionManager<EmployeeSchedule, HardSoftBigDecimalScore> solutionManager;
+    SolutionManager<EmployeeSchedule, HardMediumSoftBigDecimalScore> solutionManager;
 
     // TODO: Without any "time to live", the map may eventually grow out of memory.
     private final ConcurrentMap<String, Job> jobIdToJob = new ConcurrentHashMap<>();
 
     @Inject
     public EmployeeScheduleResource(SolverManager<EmployeeSchedule, String> solverManager,
-            SolutionManager<EmployeeSchedule, HardSoftBigDecimalScore> solutionManager) {
+            SolutionManager<EmployeeSchedule, HardMediumSoftBigDecimalScore> solutionManager) {
         this.solverManager = solverManager;
         this.solutionManager = solutionManager;
     }
@@ -103,8 +103,8 @@ public class EmployeeScheduleResource {
     @Consumes({ MediaType.APPLICATION_JSON })
     @Produces(MediaType.APPLICATION_JSON)
     @Path("analyze")
-    public ScoreAnalysis<HardSoftBigDecimalScore> analyze(EmployeeSchedule problem,
-            @QueryParam("fetchPolicy") ScoreAnalysisFetchPolicy fetchPolicy) {
+    public ScoreAnalysis<HardMediumSoftBigDecimalScore> analyze(EmployeeSchedule problem,
+                                                                @QueryParam("fetchPolicy") ScoreAnalysisFetchPolicy fetchPolicy) {
         return fetchPolicy == null ? solutionManager.analyze(problem) : solutionManager.analyze(problem, fetchPolicy);
     }
 

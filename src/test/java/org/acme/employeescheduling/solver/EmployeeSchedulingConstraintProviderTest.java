@@ -32,13 +32,13 @@ class EmployeeSchedulingConstraintProviderTest {
 
     @Test
     void requiredSkill() {
-        Employee employee = new Employee("Amy", Set.of(), null, null, null, 160);
+        Employee employee = new Employee("Amy", Set.of(), null, null, null, null, 160);
         constraintVerifier.verifyThat(EmployeeSchedulingConstraintProvider::requiredSkill)
                 .given(employee,
                         new Shift("1", DAY_START_TIME, DAY_END_TIME, "Location", "Skill", employee, false))
                 .penalizes(1);
 
-        employee = new Employee("Beth", Set.of("Skill"), null, null, null, 160);
+        employee = new Employee("Beth", Set.of("Skill"), null, null, null, null, 160);
         constraintVerifier.verifyThat(EmployeeSchedulingConstraintProvider::requiredSkill)
                 .given(employee,
                         new Shift("2", DAY_START_TIME, DAY_END_TIME, "Location", "Skill", employee, false))
@@ -47,8 +47,8 @@ class EmployeeSchedulingConstraintProviderTest {
 
     @Test
     void overlappingShifts() {
-        Employee employee1 = new Employee("Amy", null, null, null, null, 160);
-        Employee employee2 = new Employee("Beth", null, null, null, null, 160);
+        Employee employee1 = new Employee("Amy", null, null, null, null, null, 160);
+        Employee employee2 = new Employee("Beth", null, null, null, null, null, 160);
         constraintVerifier.verifyThat(EmployeeSchedulingConstraintProvider::noOverlappingShifts)
                 .given(employee1, employee2,
                         new Shift("1", DAY_START_TIME, DAY_END_TIME, "Location", "Skill", employee1, false),
@@ -70,8 +70,8 @@ class EmployeeSchedulingConstraintProviderTest {
 
     @Test
     void oneShiftPerDay() {
-        Employee employee1 = new Employee("Amy", null, null, null, null, 160);
-        Employee employee2 = new Employee("Beth", null, null, null, null, 160);
+        Employee employee1 = new Employee("Amy", null, null, null, null, null, 160);
+        Employee employee2 = new Employee("Beth", null, null, null, null, null, 160);
         constraintVerifier.verifyThat(EmployeeSchedulingConstraintProvider::noOverlappingShifts)
                 .given(employee1, employee2,
                         new Shift("1", DAY_START_TIME, DAY_END_TIME, "Location", "Skill", employee1, false),
@@ -99,8 +99,8 @@ class EmployeeSchedulingConstraintProviderTest {
 
     @Test
     void atLeast11HoursBetweenConsecutiveShifts() {
-        Employee employee1 = new Employee("Amy", null, null, null, null, 160);
-        Employee employee2 = new Employee("Beth", null, null, null, null, 160);
+        Employee employee1 = new Employee("Amy", null, null, null, null, null, 160);
+        Employee employee2 = new Employee("Beth", null, null, null, null, null, 160);
         constraintVerifier.verifyThat(EmployeeSchedulingConstraintProvider::atLeast11HoursBetweenTwoShifts)
                 .given(employee1, employee2,
                         new Shift("1", DAY_START_TIME, DAY_END_TIME, "Location", "Skill", employee1, false),
@@ -141,8 +141,8 @@ class EmployeeSchedulingConstraintProviderTest {
 
     @Test
     void balanceEmployeeShiftAssignments() {
-        Employee employee1 = new Employee("Amy", null, null, null, Collections.emptySet(), 160);
-        Employee employee2 = new Employee("Beth", null, null, null, Collections.emptySet(), 160);
+        Employee employee1 = new Employee("Amy", null, null, null, null, Collections.emptySet(), 160);
+        Employee employee2 = new Employee("Beth", null, null, null, null, Collections.emptySet(), 160);
         // No employees have shifts assigned; the schedule is perfectly balanced.
         constraintVerifier.verifyThat(EmployeeSchedulingConstraintProvider::balanceEmployeeShiftAssignments)
                 .given(employee1, employee2)
