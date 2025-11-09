@@ -10,6 +10,9 @@ public class Employee {
     @PlanningId
     private String name;
     private Set<String> skills;
+
+    private Integer id;
+
     private Set<AvailabilityInterval> unavailableIntervals;
     private Set<AvailabilityInterval> vacationIntervals;
     private Set<AvailabilityInterval> undesiredIntervals;
@@ -18,8 +21,7 @@ public class Employee {
     public Employee() {
 
     }
-
-    public Employee(String name, Set<String> skills, Set<AvailabilityInterval> unavailableIntervals,
+    public Employee(int id, String name, Set<String> skills, Set<AvailabilityInterval> unavailableIntervals,
             Set<AvailabilityInterval> undesiredIntervals,Set<AvailabilityInterval> vacationIntervals, Set<AvailabilityInterval> desiredIntervals, int monthlyHours) {
 		this.name = name;
 		this.skills = skills;
@@ -28,10 +30,19 @@ public class Employee {
 		this.desiredIntervals = desiredIntervals;
 		this.monthlyHours = monthlyHours;
         this.vacationIntervals = vacationIntervals;
+        this.id = id;
 	}
 
     public String getName() {
         return name;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public void setName(String name) {
