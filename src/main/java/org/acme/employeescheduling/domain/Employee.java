@@ -8,10 +8,10 @@ import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 
 public class Employee {
     @PlanningId
-    private String name;
+    private String id;
     private Set<String> skills;
 
-    private Integer id;
+    private String name;
 
     private Set<AvailabilityInterval> unavailableIntervals;
     private Set<AvailabilityInterval> vacationIntervals;
@@ -21,7 +21,7 @@ public class Employee {
     public Employee() {
 
     }
-    public Employee(int id, String name, Set<String> skills, Set<AvailabilityInterval> unavailableIntervals,
+    public Employee(String id, String name, Set<String> skills, Set<AvailabilityInterval> unavailableIntervals,
             Set<AvailabilityInterval> undesiredIntervals,Set<AvailabilityInterval> vacationIntervals, Set<AvailabilityInterval> desiredIntervals, int monthlyHours) {
 		this.name = name;
 		this.skills = skills;
@@ -37,11 +37,11 @@ public class Employee {
         return name;
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
