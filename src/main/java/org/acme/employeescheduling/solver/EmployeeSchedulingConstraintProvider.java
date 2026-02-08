@@ -39,6 +39,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
         return new Constraint[] {
                 // Hard constraints
                 requiredSkill(constraintFactory),
+                requiredGender(constraintFactory),
                 noOverlappingShifts(constraintFactory),
                 atLeast11HoursBetweenTwoShifts(constraintFactory),
                 oneShiftPerDay(constraintFactory),
@@ -58,6 +59,13 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
                 .filter(shift -> !shift.getEmployee().getSkills().contains(shift.getRequiredSkill()))
                 .penalize(HardMediumSoftBigDecimalScore.ONE_HARD)
                 .asConstraint("Missing required skill");
+    }
+
+    Constraint requiredGender(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Shift.class)
+                .filter(shift -> shift.getEmployee().getSkills().stream().noneMatch(shift.getGender()::contains))
+                .penalize(HardMediumSoftBigDecimalScore.ONE_MEDIUM)
+                .asConstraint("Missing required gender");
     }
 
     Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {

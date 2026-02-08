@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
+import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
@@ -20,24 +21,25 @@ public class Shift {
 
     private String location;
     private String requiredSkill;
-    
-    private boolean isFullDay;
 
+    private Set<String> gender;
+
+    private boolean isFullDay;
     @PlanningVariable
     private Employee employee;
 
     public Shift() {
     }
 
-    public Shift(LocalDateTime start, LocalDateTime end, String location, String requiredSkill, boolean isFullDay) {
-        this(start, end, location, requiredSkill, null, isFullDay);
+    public Shift(LocalDateTime start, LocalDateTime end, String location, String requiredSkill, Set<String> gender, boolean isFullDay) {
+        this(start, end, location, requiredSkill, null, gender, isFullDay);
     }
 
-    public Shift(LocalDateTime start, LocalDateTime end, String location, String requiredSkill, Employee employee, boolean isFullDay) {
-        this(null, start, end, location, requiredSkill, employee, isFullDay);
+    public Shift(LocalDateTime start, LocalDateTime end, String location, String requiredSkill, Employee employee, Set<String> gender, boolean isFullDay) {
+        this(null, start, end, location, requiredSkill, employee, gender, isFullDay);
     }
 
-    public Shift(String id, LocalDateTime start, LocalDateTime end, String location, String requiredSkill, Employee employee, boolean isFullDay) {
+    public Shift(String id, LocalDateTime start, LocalDateTime end, String location, String requiredSkill, Employee employee, Set<String> gender,  boolean isFullDay) {
         this.id = id;
         this.start = start;
         this.end = end;
@@ -45,9 +47,7 @@ public class Shift {
         this.requiredSkill = requiredSkill;
         this.employee = employee;
         this.isFullDay = isFullDay;
-        
-        System.out.println("Shift created: " + this.toString());
-        System.out.println("isFullDay: " + this.isFullDay);
+        this.gender = gender;
     }
 
     public String getId() {
@@ -56,6 +56,14 @@ public class Shift {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public Set<String> getGender() {
+        return gender;
+    }
+
+    public void setGender(Set<String> gender) {
+        this.gender = gender;
     }
 
     public LocalDateTime getStart() {
