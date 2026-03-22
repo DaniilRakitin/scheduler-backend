@@ -7,6 +7,7 @@ import static ai.timefold.solver.core.api.score.stream.Joiners.overlapping;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.IsoFields;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.buildin.hardmediumsoftbigdecimal.HardMediumSoftBigDecimalScore;
@@ -46,6 +47,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
                 unavailableEmployee(constraintFactory),
                 employeeNotExceedMonthlyHours(constraintFactory),
                 fullDayShift24HourBreak(constraintFactory),
+                employeeNotExceedWeeklyHours(constraintFactory),
                 // Medium constrains
                 desiredDayForEmployee(constraintFactory),
                 balanceEmployeeShiftAssignments(constraintFactory),
@@ -179,6 +181,24 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
         LocalDateTime overlapStart = shift.getStart().isAfter(interval.getStart()) ? shift.getStart() : interval.getStart();
         LocalDateTime overlapEnd = shift.getEnd().isBefore(interval.getEnd()) ? shift.getEnd() : interval.getEnd();
         return (int) Duration.between(overlapStart, overlapEnd).toMinutes();
+    }
+    
+    Constraint employeeNotExceedWeeklyHours(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Shift.class)
+            .groupBy(
+                Shift::getEmployee,
+                shift -> shift.getStart().get(IsoFields.WEEK_BASED_YEAR),
+                shift -> shift.getStart().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR),
+                ConstraintCollectors.sumBigDecimal(this::calculateShiftHours)
+            )
+            .filter((employee, year, week, totalHours) -> 
+                totalHours.compareTo(BigDecimal.valueOf(56)) > 0)
+            .penalizeBigDecimal(
+                HardMediumSoftBigDecimalScore.ONE_HARD,
+                (employee, year, week, totalHours) -> 
+                    totalHours.subtract(BigDecimal.valueOf(56))
+            )
+            .asConstraint("Employee over 56 weekly hours");
     }
 
     
