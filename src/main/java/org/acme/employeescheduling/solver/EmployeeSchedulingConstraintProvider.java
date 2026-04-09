@@ -51,6 +51,9 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
                 // Medium constrains
                 desiredDayForEmployee(constraintFactory),
                 balanceEmployeeShiftAssignments(constraintFactory),
+                maxThreeConsecutiveDays(constraintFactory),
+                    
+
                 // Soft constraints
                 undesiredDayForEmployee(constraintFactory)
         };
@@ -199,6 +202,24 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
                     totalHours.subtract(BigDecimal.valueOf(56))
             )
             .asConstraint("Employee over 56 weekly hours");
+    }
+    Constraint maxThreeConsecutiveDays(ConstraintFactory constraintFactory) {
+        return constraintFactory.forEach(Shift.class)
+            .filter(shift -> "KLIENDITEENINDAJA".equals(shift.getRequiredSkill()))
+            .join(Shift.class,
+                equal(Shift::getEmployee),
+                equal(shift -> shift.getStart().toLocalDate().plusDays(1), shift -> shift.getStart().toLocalDate())
+            )
+            .join(Shift.class,
+                equal((s1, s2) -> s1.getEmployee(), Shift::getEmployee),
+                equal((s1, s2) -> s2.getStart().toLocalDate().plusDays(1), shift -> shift.getStart().toLocalDate())
+            )
+            .join(Shift.class,
+                equal((s1, s2, s3) -> s1.getEmployee(), Shift::getEmployee),
+                equal((s1, s2, s3) -> s3.getStart().toLocalDate().plusDays(1), shift -> shift.getStart().toLocalDate())
+            )
+            .penalize(HardMediumSoftBigDecimalScore.ONE_MEDIUM)
+            .asConstraint("Maksimaalselt 3 järjestikust tööpäeva");
     }
 
     
