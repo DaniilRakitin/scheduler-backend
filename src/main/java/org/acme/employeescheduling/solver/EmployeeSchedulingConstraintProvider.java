@@ -114,20 +114,20 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
     Constraint undesiredDayForEmployee(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Shift.class)
             .join(Employee.class, equal(Shift::getEmployee, Function.identity()))
-            .flattenLast(Employee::getUndesiredIntervals) // Flatten the collection of intervals
+            .flattenLast(Employee::getUndesiredIntervals)
             .filter((shift, interval) -> shift.getStart().isBefore(interval.getEnd()) && shift.getEnd().isAfter(interval.getStart()))
-            .penalize(HardMediumSoftBigDecimalScore.ONE_SOFT,
-                    this::calculateOverlapMinutes)
+            .penalizeBigDecimal(HardMediumSoftBigDecimalScore.ONE_SOFT,
+                    (shift, interval) -> BigDecimal.valueOf(calculateOverlapMinutes(shift, interval)))
             .asConstraint("Undesired time for employee");
     }
 
     Constraint desiredDayForEmployee(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Shift.class)
             .join(Employee.class, equal(Shift::getEmployee, Function.identity()))
-            .flattenLast(Employee::getDesiredIntervals) // Flatten the collection of intervals
+            .flattenLast(Employee::getDesiredIntervals)
             .filter((shift, interval) -> shift.getStart().isBefore(interval.getEnd()) && shift.getEnd().isAfter(interval.getStart()))
-            .reward(HardMediumSoftBigDecimalScore.ONE_MEDIUM,
-                    (shift, interval) -> Math.max(0, calculateOverlapMinutes(shift, interval)))
+            .rewardBigDecimal(HardMediumSoftBigDecimalScore.ONE_MEDIUM,
+                    (shift, interval) -> BigDecimal.valueOf(calculateOverlapMinutes(shift, interval)))
             .asConstraint("Desired time for employee");
     }
 
@@ -137,7 +137,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
                 .complement(Employee.class, e -> 0) // Include all employees which are not assigned to any shift.c
                 .groupBy(ConstraintCollectors.loadBalance((employee, shiftCount) -> employee,
                         (employee, shiftCount) -> shiftCount))
-                .penalizeBigDecimal(HardMediumSoftBigDecimalScore.ONE_MEDIUM, LoadBalance::unfairness)
+                .penalizeBigDecimal(HardMediumSoftBigDecimalScore.ONE_SOFT, LoadBalance::unfairness)
                 .asConstraint("Balance employee shift assignments");
     }
     
