@@ -205,7 +205,6 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
     }
     Constraint maxThreeConsecutiveDays(ConstraintFactory constraintFactory) {
         return constraintFactory.forEach(Shift.class)
-            .filter(shift -> "KLIENDITEENINDAJA".equals(shift.getRequiredSkill()))
             .join(Shift.class,
                 equal(Shift::getEmployee),
                 equal(shift -> shift.getStart().toLocalDate().plusDays(1), shift -> shift.getStart().toLocalDate())
@@ -219,7 +218,7 @@ public class EmployeeSchedulingConstraintProvider implements ConstraintProvider 
                 equal((s1, s2, s3) -> s3.getStart().toLocalDate().plusDays(1), shift -> shift.getStart().toLocalDate())
             )
             .penalize(HardMediumSoftBigDecimalScore.ONE_MEDIUM)
-            .asConstraint("Maksimaalselt 3 järjestikust tööpäeva");
+            .asConstraint("Maximum 3 consecutive working days");
     }
 
     
